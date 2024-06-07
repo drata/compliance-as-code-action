@@ -1,1 +1,0 @@
-{"version":3,"file":"iacUploadDetailsRequest.js","sourceRoot":"","sources":["../../../src/apis/models/iacUploadDetailsRequest.ts"],"names":[],"mappings":"","sourcesContent":["export interface IacUploadDetailsRequest {\n  repositoryName: string;\n  repositoryOwner: string;\n  branchName: string;\n  commitHash: string;\n}\n"]}

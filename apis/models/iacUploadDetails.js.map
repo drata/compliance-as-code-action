@@ -1,1 +1,0 @@
-{"version":3,"file":"iacUploadDetails.js","sourceRoot":"","sources":["../../../src/apis/models/iacUploadDetails.ts"],"names":[],"mappings":"","sourcesContent":["export interface IacUploadDetails {\n  bucketName: string;\n  presignedUrl: string;\n  objectKey: string;\n  zipName: string;\n}\n"]}

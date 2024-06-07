@@ -1,1 +1,0 @@
-{"version":3,"file":"actionConfig.js","sourceRoot":"","sources":["../../src/models/actionConfig.ts"],"names":[],"mappings":"","sourcesContent":["export interface ActionConfig {\n  workspaceId: string;\n  verboseLogging: boolean;\n  maxSeverity: string;\n  region: string;\n  timeoutSeconds: number;\n  apiKey: string;\n  environment: string;\n}\n"]}

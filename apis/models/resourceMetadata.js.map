@@ -1,1 +1,0 @@
-{"version":3,"file":"resourceMetadata.js","sourceRoot":"","sources":["../../../src/apis/models/resourceMetadata.ts"],"names":[],"mappings":"","sourcesContent":["export interface ResourceMetadata {\n  resourceId: string;\n  resourceName: string;\n  resourceType: string;\n}\n"]}
