@@ -1,0 +1,1 @@
+{"version":3,"file":"configurationStatus.js","sourceRoot":"","sources":["../../src/models/configurationStatus.ts"],"names":[],"mappings":"","sourcesContent":["export interface ConfigurationStatus {\n  isValid: boolean;\n  message: string;\n}\n"]}

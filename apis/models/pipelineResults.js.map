@@ -1,0 +1,1 @@
+{"version":3,"file":"pipelineResults.js","sourceRoot":"","sources":["../../../src/apis/models/pipelineResults.ts"],"names":[],"mappings":"","sourcesContent":["import { DesignGap } from \"./designGap\";\n\nexport interface PipelineResults {\n  designGaps: DesignGap[];\n}\n"]}
