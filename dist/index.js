@@ -32256,7 +32256,6 @@ class ActionService {
     }
     async prepare() {
         let response = await this.api?.getClientUploadStorageDetails();
-        core.info(JSON.stringify(response));
         if (response != null || response != undefined) {
             let fileService = new fileService_1.FileService();
             await fileService.zipFilesFromWorkspace(process.env.GITHUB_WORKSPACE || "", response.zipName, this.includeFileExtensions);
