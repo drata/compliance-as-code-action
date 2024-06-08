@@ -1,0 +1,40 @@
+name: "Drata Compliance as Code Action"
+description:
+  "Drata Compliance as Code action scans Infrastructure as Code to identify
+  any compliance issues"
+author: "Drata"
+
+# Add your action's branding here. This will appear on the GitHub Marketplace.
+branding:
+  icon: "shield"
+  color: "gray-dark"
+
+# Define your inputs here.
+inputs:
+  minimumSeverity:
+    description: "Minimum severity"
+    required: true
+    default: "Critical"
+  workspaceId:
+    description: "Workspace to run this action for"
+    default: 1
+  verboseLogging:
+    description:
+      "A boolean flag that notes if design gaps should be displayed in
+      GitHub Workflow console log"
+    default: false
+  region:
+    description: "Provide your region EU, US"
+    default: "US"
+  timeoutSeconds:
+    description: "Time in seconds to wait for testing to complete before initiating a timeout of the action."
+    default: 600
+
+# Define your outputs here.
+outputs:
+  time:
+    description: "Your output description here"
+
+runs:
+  using: node20
+  main: dist/index.js
