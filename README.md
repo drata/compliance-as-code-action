@@ -53,7 +53,11 @@ jobs:
 
 ## Secrets
 
-- `DRATA_IAC_PIPELINE_KEY` - **_(Required)_** This is the API key for your Drata Compliance as Code action workflow. The pipeline key can be created in Drata Platform.
+- `DRATA_API_TOKEN` - **_(Required)_** This is the API key for your Drata Compliance as Code action workflow. The pipeline key can be created in Drata
+- `GITHUB_REPOSITORY`: $GITHUB*REPOSITORY - \*\**(Optional)\_\*\* Your GitHub Repository referenced in the Pipeline.
+- `GITHUB_TOKEN`: ${{ secrets.GITHUB_TOKEN }} - **_(Optional)_** Your GitHub Token.
+- Platform.
+-
 
 ## License
 
