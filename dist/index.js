@@ -32189,11 +32189,12 @@ function getPipelineMetadata(config) {
     let repoTokens = repoPath.split("/");
     let repoName = repoTokens[repoTokens.length - 1];
     let sourceBranch = process.env.GITHUB_REF_NAME ?? "";
+    let destinationBranch = process.env.GITHUB_BASE_REF ?? sourceBranch;
     let repoRef = process.env.GITHUB_REF || "";
     let triggerRefTokens = repoRef.split("/");
     let trigger = triggerRefTokens[1];
     let pipelineInfo = {
-        branchName: sourceBranch,
+        branchName: destinationBranch,
         repositoryName: repoName,
         repositoryId: process.env.GITHUB_REPOSITORY_ID || "",
         commitHash: process.env.GITHUB_SHA ?? "",
@@ -32201,7 +32202,7 @@ function getPipelineMetadata(config) {
         runId: runId,
         vendorRunId: process.env.GITHUB_RUN_ID || "",
         sourceBranchName: sourceBranch,
-        destinationBranchName: process.env.GITHUB_BASE_REF || sourceBranch,
+        destinationBranchName: destinationBranch,
         runInitiatedBy: process.env.GITHUB_ACTOR || "",
         trigger: trigger,
         minimumSeverity: config.configParams?.maxSeverity || "",
