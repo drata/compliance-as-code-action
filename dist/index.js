@@ -31984,6 +31984,7 @@ exports.Api = void 0;
 const axios_1 = __importDefault(__nccwpck_require__(8757));
 const core = __importStar(__nccwpck_require__(2186));
 const fs = __nccwpck_require__(7147);
+const helper_1 = __nccwpck_require__(4862);
 class Api {
     ApiBaseUrl = "";
     config;
@@ -31993,11 +31994,14 @@ class Api {
     }
     async getClientUploadStorageDetails() {
         core.info("Getting storage details");
+        let branch = (0, helper_1.getStringValue)(process.env.GITHUB_HEAD_REF) ??
+            (0, helper_1.getStringValue)(process.env.GITHUB_REF_NAME) ??
+            "";
         return new Promise((resolve, reject) => {
             let repositoryName = (process.env.GITHUB_REPOSITORY || "")
                 .split("/")
                 .pop();
-            let url = `${this.ApiBaseUrl}/public/workspaces/${this.config?.workspaceId}/pipelines/iac-upload-details?repositoryName=${repositoryName}&repositoryOwner=${process.env.GITHUB_REPOSITORY_OWNER}&branchName=${process.env.GITHUB_REF_NAME}&commitHash=${process.env.GITHUB_SHA}`;
+            let url = `${this.ApiBaseUrl}/public/workspaces/${this.config?.workspaceId}/pipelines/iac-upload-details?repositoryName=${repositoryName}&repositoryOwner=${process.env.GITHUB_REPOSITORY_OWNER}&branchName=${branch}&commitHash=${process.env.GITHUB_SHA}`;
             let encodedUrl = encodeURI(url);
             let partial = this.config?.apiKey.substring(0, 4);
             axios_1.default
@@ -32155,6 +32159,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const configuration_1 = __nccwpck_require__(5114);
 const actionService_1 = __nccwpck_require__(1538);
 const uuid_1 = __nccwpck_require__(5840);
+const helper_1 = __nccwpck_require__(4862);
 async function run() {
     try {
         let config = new configuration_1.Configuration();
@@ -32188,13 +32193,13 @@ function getPipelineMetadata(config) {
     let repoPath = process.env.GITHUB_REPOSITORY ?? "";
     let repoTokens = repoPath.split("/");
     let repoName = repoTokens[repoTokens.length - 1];
-    let sourceBranch = process.env.GITHUB_REF_NAME ?? "";
-    let destinationBranch = process.env.GITHUB_BASE_REF ?? sourceBranch;
-    let repoRef = process.env.GITHUB_REF || "";
-    let triggerRefTokens = repoRef.split("/");
-    let trigger = triggerRefTokens[1];
+    let sourceBranch = (0, helper_1.getStringValue)(process.env.GITHUB_HEAD_REF) ??
+        (0, helper_1.getStringValue)(process.env.GITHUB_REF_NAME) ??
+        "";
+    let destinationBranch = (0, helper_1.getStringValue)(process.env.GITHUB_BASE_REF) ?? sourceBranch;
+    let trigger = process.env.GITHUB_EVENT_NAME ?? "";
     let pipelineInfo = {
-        branchName: destinationBranch,
+        branchName: sourceBranch,
         repositoryName: repoName,
         repositoryId: process.env.GITHUB_REPOSITORY_ID || "",
         commitHash: process.env.GITHUB_SHA ?? "",
@@ -32581,6 +32586,24 @@ function zipFilesFromPath(path, zipName, includeFileExtensions) {
     zip.writeZip(zipName);
 }
 exports.zipFilesFromPath = zipFilesFromPath;
+
+
+/***/ }),
+
+/***/ 4862:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getStringValue = void 0;
+function getStringValue(str) {
+    if (!str || str.length < 1) {
+        return null;
+    }
+    return str;
+}
+exports.getStringValue = getStringValue;
 
 
 /***/ }),
