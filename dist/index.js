@@ -32166,11 +32166,14 @@ const helper_1 = __nccwpck_require__(4862);
 async function run() {
     try {
         let config = new configuration_1.Configuration();
+        let sourceBranch = (0, helper_1.getStringValue)(process.env.GITHUB_HEAD_REF) ??
+            (0, helper_1.getStringValue)(process.env.GITHUB_REF_NAME) ??
+            "";
         let status = config.checkIfActionIsConfiguredCorrectly();
         if (!status.isValid) {
             core.setFailed(status.message);
         }
-        core.info(` Running action on repository: ${process.env.GITHUB_REPOSITORY} for branch ${process.env.GITHUB_REF_NAME}`);
+        core.info(` Running action on repository: ${process.env.GITHUB_REPOSITORY} for branch ${sourceBranch}`);
         if (config.configParams?.apiKey === "undefined") {
             core.info("Api key is undefined " + config.configParams.apiKey.substring(0, 4));
         }
@@ -32202,7 +32205,7 @@ function getPipelineMetadata(config) {
     let destinationBranch = (0, helper_1.getStringValue)(process.env.GITHUB_BASE_REF) ?? sourceBranch;
     let trigger = process.env.GITHUB_EVENT_NAME ?? "";
     let pipelineInfo = {
-        branchName: sourceBranch,
+        branchName: destinationBranch,
         repositoryName: repoName,
         repositoryId: process.env.GITHUB_REPOSITORY_ID || "",
         commitHash: process.env.GITHUB_SHA ?? "",
