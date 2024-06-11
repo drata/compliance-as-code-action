@@ -1,7 +1,7 @@
 import { ActionConfig } from "src/models/actionConfig";
 import { IacUploadDetails } from "src/apis/models/iacUploadDetails";
 import { PostPipelinesScanRequest } from "./models/postPipelineScanRequest";
-import { PipelineResults } from "./models/pipelineResults";
+import { PipelineResultResponse } from "./models/pipelineResultResponse";
 export declare class Api {
     private ApiBaseUrl;
     private config;
@@ -9,6 +9,6 @@ export declare class Api {
     getClientUploadStorageDetails(): Promise<IacUploadDetails>;
     uploadIaCToS3(uploadRequest: IacUploadDetails): Promise<void>;
     postIaCScanValidation(iacScanRequest: PostPipelinesScanRequest): Promise<any>;
-    checkForResults(runId: string): Promise<PipelineResults>;
+    checkForResults(runId: string): Promise<PipelineResultResponse>;
     private buildApiUrl;
 }

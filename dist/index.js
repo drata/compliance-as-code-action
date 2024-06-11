@@ -32096,12 +32096,15 @@ class Api {
                 },
             })
                 .then((res) => {
-                resolve(res.data);
+                resolve({ results: res.data, status: res.status });
             })
                 .catch((error) => {
                 core.info(error);
                 if (error.response.status === 404) {
-                    resolve({ designGaps: [] });
+                    resolve({
+                        results: { designGaps: [] },
+                        status: error.response.status,
+                    });
                 }
                 else {
                     reject(error);
@@ -32177,7 +32180,7 @@ async function run() {
         let results = await action.checkIfResultsAreAvailable(config.configParams.timeoutSeconds, pipelineInfo.runId);
         let actionResult = action.publishResults(config.configParams?.maxSeverity || "", results);
         if (actionResult == false) {
-            core.setFailed(`Drata Compliance as Code action failed. There are issues found with severity:${config.configParams?.maxSeverity}`);
+            core.setFailed(`Drata Compliance as Code action failed. There are issues found with severity >= ${config.configParams?.maxSeverity}`);
         }
         else {
             core.info("Drata Compliance as Code passed with issues found.");
@@ -32289,18 +32292,21 @@ class ActionService {
         return await this.api?.postIaCScanValidation(iacPipelineScanRequest);
     }
     async checkIfResultsAreAvailable(timeoutInSeconds, runId) {
-        let results = { designGaps: [] };
+        let response = {
+            results: { designGaps: [] },
+            status: 0,
+        };
         let retries = timeoutInSeconds / 5;
         core.info(`Waiting for results with ${retries} retries...`);
         for (let retry = 0; retry < retries; retry++) {
             core.info(` Retry ${retry + 1}: Checking for results...`);
             await this.sleep(5000);
-            results = await this.api?.checkForResults(runId);
-            if (results.designGaps?.length != 0) {
+            response = await this.api?.checkForResults(runId);
+            if (response.status === 200) {
                 break;
             }
         }
-        return results;
+        return response.results;
     }
     publishResults(maxSeverity, results) {
         let severityThreshold = 0;
@@ -32322,9 +32328,6 @@ class ActionService {
                 result[severityMap[currentValue.severity]] || []).push(currentValue);
             return result;
         }, {});
-        core.info("------------------------------------------------------------------");
-        core.info(` \u001B[31mCritical: ${grouped["Critical"]?.length ?? 0} High: ${grouped["High"]?.length ?? 0} Moderate: ${grouped["Moderate"]?.length ?? 0} Low: ${grouped["Low"]?.length ?? 0} `);
-        core.info("------------------------------------------------------------------");
         let actionResult = true;
         if (severityThreshold != 0) {
             severityMap.forEach((_, index) => {
@@ -32334,6 +32337,10 @@ class ActionService {
                 }
             });
         }
+        const colorCode = actionResult ? "32" : "31";
+        core.info("------------------------------------------------------------------");
+        core.info(` \u001B[${colorCode}mCritical: ${grouped["Critical"]?.length ?? 0} High: ${grouped["High"]?.length ?? 0} Moderate: ${grouped["Moderate"]?.length ?? 0} Low: ${grouped["Low"]?.length ?? 0} `);
+        core.info("------------------------------------------------------------------");
         return actionResult;
     }
 }
