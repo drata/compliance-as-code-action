@@ -32027,37 +32027,26 @@ class Api {
         try {
             const fileStream = fs.createReadStream(uploadRequest.zipName);
             const fileStats = fs.statSync(uploadRequest.zipName);
-            let formData = new FormData();
+            const formData = new FormData();
             formData.append("terraform.zip", uploadRequest.zipName);
-            return new Promise((resolve, reject) => {
-                axios_1.default
-                    .put(uploadRequest.presignedUrl, fileStream, {
-                    headers: {
-                        "Content-Type": "application/zip",
-                        "Content-Length": `${fileStats.size.toString()}`,
-                    },
-                    maxRedirects: 0,
-                    onUploadProgress: function (progressEvent) {
-                        core.info(` File upload in progress...`);
-                    },
-                })
-                    .then((res) => {
-                    resolve(res.data);
-                })
-                    .catch((error) => {
-                    if (error.response.status === 401 ||
-                        error.response.status === 403) {
-                        core.info(`\u001B[31mThe api key is invalid or expired.`);
-                        resolve();
-                    }
-                    else {
-                        reject(error);
-                    }
-                });
+            const response = await axios_1.default.put(uploadRequest.presignedUrl, fileStream, {
+                headers: {
+                    "Content-Type": "application/zip",
+                    "Content-Length": `${fileStats.size}`,
+                },
+                maxRedirects: 0,
+                onUploadProgress: function (progressEvent) {
+                    core.info(`File upload in progress...`);
+                },
             });
+            return response.data;
         }
         catch (error) {
-            console.error("Error uploading IaC files to Drata:", error);
+            if (error.response &&
+                (error.response.status === 401 || error.response.status === 403)) {
+                throw new Error(`\u001B[31mThe API key is invalid or expired.`);
+            }
+            throw new Error(`Error uploading IaC files to Drata: ${error?.message}`);
         }
     }
     async postIaCScanValidation(iacScanRequest) {
@@ -32076,12 +32065,9 @@ class Api {
             })
                 .catch((error) => {
                 if (error.response.status === 401 || error.response.status === 403) {
-                    core.info(`\u001B[31mThe api key is invalid or expired.`);
-                    resolve({});
+                    return reject(`\u001B[31mThe api key is invalid or expired.`);
                 }
-                else {
-                    reject(error);
-                }
+                reject(error);
             });
         });
     }
@@ -32099,7 +32085,6 @@ class Api {
                 resolve({ results: res.data, status: res.status });
             })
                 .catch((error) => {
-                core.info(error);
                 if (error.response.status === 404) {
                     resolve({
                         results: { designGaps: [] },
@@ -32107,6 +32092,7 @@ class Api {
                     });
                 }
                 else {
+                    core.info(error);
                     reject(error);
                 }
             });
@@ -32179,14 +32165,20 @@ async function run() {
         }
         const pipelineInfo = getPipelineMetadata(config);
         const action = new actionService_1.ActionService(config.configParams);
-        const response = await (await action.prepare()).queueValidation(pipelineInfo);
+        await action.prepare();
+        await action.queueValidation(pipelineInfo);
         let results = await action.checkIfResultsAreAvailable(config.configParams.timeoutSeconds, pipelineInfo.runId);
         let actionResult = action.publishResults(config.configParams?.maxSeverity || "", results);
-        if (actionResult == false) {
+        if (actionResult === false) {
             core.setFailed(`Drata Compliance as Code action failed. There are issues found with severity >= ${config.configParams?.maxSeverity}`);
         }
         else {
-            core.info("Drata Compliance as Code passed with issues found.");
+            if (results?.designGaps?.length < 1) {
+                core.info("Drata Compliance as Code passed.");
+            }
+            else {
+                core.info("Drata Compliance as Code passed with issues found.");
+            }
         }
     }
     catch (error) {
@@ -32267,15 +32259,30 @@ class ActionService {
         this.api = new api_1.Api(configParams);
     }
     async prepare() {
-        let response = await this.api?.getClientUploadStorageDetails();
-        if (response != null || response != undefined) {
+        let uploadDetails = await this.api?.getClientUploadStorageDetails();
+        if (uploadDetails) {
             let fileService = new fileService_1.FileService();
-            await fileService.zipFilesFromWorkspace(process.env.GITHUB_WORKSPACE || "", response.zipName, this.includeFileExtensions);
-            let uploadResponse = await this.api?.uploadIaCToS3(response);
+            await fileService.zipFilesFromWorkspace(process.env.GITHUB_WORKSPACE || "", uploadDetails.zipName, this.includeFileExtensions);
+            const maxAttempts = 3;
+            let attempts = 0;
+            while (true) {
+                attempts++;
+                try {
+                    await this.api?.uploadIaCToS3(uploadDetails);
+                    break;
+                }
+                catch (error) {
+                    if (error.response &&
+                        error.response.status === 405 &&
+                        attempts <= maxAttempts) {
+                        core.info("Error trying to upload, retrying...");
+                        continue;
+                    }
+                    throw error;
+                }
+            }
             core.info("Files uploaded.");
-            core.info(`${uploadResponse}`);
         }
-        return this;
     }
     async queueValidation(pipelineInfo) {
         let iacPipelineScanRequest = {
@@ -32292,7 +32299,7 @@ class ActionService {
             minimumSeverity: pipelineInfo.minimumSeverity,
             runInitiatedBy: pipelineInfo.runInitiatedBy,
         };
-        return await this.api?.postIaCScanValidation(iacPipelineScanRequest);
+        await this.api?.postIaCScanValidation(iacPipelineScanRequest);
     }
     async checkIfResultsAreAvailable(timeoutInSeconds, runId) {
         let response = {

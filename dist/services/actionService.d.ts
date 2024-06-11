@@ -9,8 +9,8 @@ export declare class ActionService {
     api: Api;
     sleep: (ms: number) => Promise<unknown>;
     constructor(configParams: ActionConfig);
-    prepare(): Promise<this>;
-    queueValidation(pipelineInfo: PipelineInfo): Promise<boolean>;
+    prepare(): Promise<void>;
+    queueValidation(pipelineInfo: PipelineInfo): Promise<void>;
     checkIfResultsAreAvailable(timeoutInSeconds: number, runId: string): Promise<PipelineResults>;
     publishResults(maxSeverity: string, results: PipelineResults): boolean;
 }

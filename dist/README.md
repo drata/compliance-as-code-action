@@ -26,21 +26,21 @@ The following is an example GitHub Actions workflow:
 ```yaml
 on: push
 jobs:
-    drata-iac-scan:
+  drata-iac-scan:
     runs-on: ubuntu-latest
     name: compliance-as-code-action
     steps:
-    - name: Checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v4
-    - name: Drata Github Action
+      - name: Drata Github Action
         id: drata
         uses: drata/compliance-as-code-action@v1.0.0
         env:
-            DRATA_API_TOKEN: ${{ secrets.DRATA_IAC_PIPELINE_KEY }}
-            GITHUB_REPOSITORY: $GITHUB_REPOSITORY
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRATA_API_TOKEN: ${{ secrets.DRATA_IAC_PIPELINE_KEY }}
+          GITHUB_REPOSITORY: $GITHUB_REPOSITORY
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-            minimumSeverity: 'CRITICAL'
+          minimumSeverity: "CRITICAL"
 ```
 
 ## Parameters
