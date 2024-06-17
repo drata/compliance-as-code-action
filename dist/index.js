@@ -32259,13 +32259,13 @@ class ActionService {
         this.api = new api_1.Api(configParams);
     }
     async prepare() {
-        let uploadDetails = await this.api?.getClientUploadStorageDetails();
-        if (uploadDetails) {
-            let fileService = new fileService_1.FileService();
-            await fileService.zipFilesFromWorkspace(process.env.GITHUB_WORKSPACE || "", uploadDetails.zipName, this.includeFileExtensions);
-            const maxAttempts = 3;
-            let attempts = 0;
-            while (true) {
+        const maxAttempts = 3;
+        let attempts = 0;
+        while (true) {
+            let uploadDetails = await this.api?.getClientUploadStorageDetails();
+            if (uploadDetails) {
+                let fileService = new fileService_1.FileService();
+                await fileService.zipFilesFromWorkspace(process.env.GITHUB_WORKSPACE || "", uploadDetails.zipName, this.includeFileExtensions);
                 attempts++;
                 try {
                     await this.api?.uploadIaCToS3(uploadDetails);
