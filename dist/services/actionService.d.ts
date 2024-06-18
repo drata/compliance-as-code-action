@@ -10,7 +10,10 @@ export declare class ActionService {
     sleep: (ms: number) => Promise<unknown>;
     constructor(configParams: ActionConfig);
     prepare(): Promise<void>;
-    queueValidation(pipelineInfo: PipelineInfo): Promise<void>;
+    queueValidation(pipelineInfo: PipelineInfo): Promise<{
+        pipelineId: number;
+    }>;
     checkIfResultsAreAvailable(timeoutInSeconds: number, runId: string): Promise<PipelineResults>;
     publishResults(maxSeverity: string, results: PipelineResults): boolean;
+    buildPlatformLink(runId: string, pipelineId: number): string | null;
 }

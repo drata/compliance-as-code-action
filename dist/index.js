@@ -32046,7 +32046,7 @@ class Api {
                 (error.response.status === 401 || error.response.status === 403)) {
                 throw new Error(`\u001B[31mThe API key is invalid or expired.`);
             }
-            throw new Error(`Error uploading IaC files to Drata: ${error?.message}`);
+            throw error;
         }
     }
     async postIaCScanValidation(iacScanRequest) {
@@ -32166,7 +32166,7 @@ async function run() {
         const pipelineInfo = getPipelineMetadata(config);
         const action = new actionService_1.ActionService(config.configParams);
         await action.prepare();
-        await action.queueValidation(pipelineInfo);
+        const { pipelineId } = await action.queueValidation(pipelineInfo);
         let results = await action.checkIfResultsAreAvailable(config.configParams.timeoutSeconds, pipelineInfo.runId);
         let actionResult = action.publishResults(config.configParams?.maxSeverity || "", results);
         if (actionResult === false) {
@@ -32256,11 +32256,13 @@ class ActionService {
     api;
     sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     constructor(configParams) {
+        this.configParams = configParams;
         this.api = new api_1.Api(configParams);
     }
     async prepare() {
         const maxAttempts = 3;
         let attempts = 0;
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
         while (true) {
             let uploadDetails = await this.api?.getClientUploadStorageDetails();
             if (uploadDetails) {
@@ -32276,6 +32278,7 @@ class ActionService {
                         error.response.status === 405 &&
                         attempts <= maxAttempts) {
                         core.info("Error trying to upload, retrying...");
+                        sleep(2000);
                         continue;
                     }
                     throw error;
@@ -32299,7 +32302,7 @@ class ActionService {
             minimumSeverity: pipelineInfo.minimumSeverity,
             runInitiatedBy: pipelineInfo.runInitiatedBy,
         };
-        await this.api?.postIaCScanValidation(iacPipelineScanRequest);
+        return await this.api?.postIaCScanValidation(iacPipelineScanRequest);
     }
     async checkIfResultsAreAvailable(timeoutInSeconds, runId) {
         let response = {
@@ -32352,6 +32355,17 @@ class ActionService {
         core.info(` \u001B[${colorCode}mCritical: ${grouped["Critical"]?.length ?? 0} High: ${grouped["High"]?.length ?? 0} Moderate: ${grouped["Moderate"]?.length ?? 0} Low: ${grouped["Low"]?.length ?? 0} `);
         core.info("------------------------------------------------------------------");
         return actionResult;
+    }
+    buildPlatformLink(runId, pipelineId) {
+        if ((pipelineId ?? 0) === 0 || (runId ?? "") === "") {
+            return null;
+        }
+        let environmentMap = new Map();
+        environmentMap.set("app-04", "app-04.dev");
+        environmentMap.set("production", "app");
+        environmentMap.set("qa", "app.qa");
+        const identifier = environmentMap.get(this.configParams?.environment ?? "");
+        return `https://${identifier}.drata.com/compliance/monitoring/pipeline/${pipelineId}/run/${runId}`;
     }
 }
 exports.ActionService = ActionService;

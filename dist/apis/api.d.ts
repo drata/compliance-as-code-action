@@ -8,7 +8,9 @@ export declare class Api {
     constructor(actionConfig: ActionConfig);
     getClientUploadStorageDetails(): Promise<IacUploadDetails>;
     uploadIaCToS3(uploadRequest: IacUploadDetails): Promise<void>;
-    postIaCScanValidation(iacScanRequest: PostPipelinesScanRequest): Promise<any>;
+    postIaCScanValidation(iacScanRequest: PostPipelinesScanRequest): Promise<{
+        pipelineId: number;
+    }>;
     checkForResults(runId: string): Promise<PipelineResultResponse>;
     private buildApiUrl;
 }
