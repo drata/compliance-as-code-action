@@ -32170,6 +32170,10 @@ async function run() {
         let results = await action.checkIfResultsAreAvailable(config.configParams.timeoutSeconds, pipelineInfo.runId);
         let actionResult = action.publishResults(config.configParams?.maxSeverity || "", results);
         if (actionResult === false) {
+            const platformUrl = action.buildPlatformLink(pipelineInfo.runId, pipelineId);
+            if (platformUrl) {
+                core.info(`View the full result of this run at ${platformUrl}`);
+            }
             core.setFailed(`Drata Compliance as Code action failed. There are issues found with severity >= ${config.configParams?.maxSeverity}`);
         }
         else {
