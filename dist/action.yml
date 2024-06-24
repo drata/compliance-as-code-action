@@ -17,7 +17,6 @@ inputs:
     default: "Critical"
   workspaceId:
     description: "Workspace to run this action for"
-    default: 1
   verboseLogging:
     description:
       "A boolean flag that notes if design gaps should be displayed in

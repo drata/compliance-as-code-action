@@ -32151,18 +32151,20 @@ const uuid_1 = __nccwpck_require__(5840);
 const helper_1 = __nccwpck_require__(4862);
 async function run() {
     try {
+        if (!process.env.DRATA_API_TOKEN) {
+            core.setFailed("API key is not defined. Please ensure you have set a valid API key in the configuration parameters.");
+            return;
+        }
         let config = new configuration_1.Configuration();
         let sourceBranch = (0, helper_1.getStringValue)(process.env.GITHUB_HEAD_REF) ??
             (0, helper_1.getStringValue)(process.env.GITHUB_REF_NAME) ??
             "";
-        let status = config.checkIfActionIsConfiguredCorrectly();
-        if (!status.isValid) {
-            core.setFailed(status.message);
+        let configStatus = config.checkIfActionIsConfiguredCorrectly();
+        if (!configStatus.isValid) {
+            core.setFailed(configStatus.message);
+            return;
         }
         core.info(` Running action on repository: ${process.env.GITHUB_REPOSITORY} for branch ${sourceBranch}`);
-        if (config.configParams?.apiKey === "undefined") {
-            core.info("Api key is undefined " + config.configParams.apiKey.substring(0, 4));
-        }
         const pipelineInfo = getPipelineMetadata(config);
         const action = new actionService_1.ActionService(config.configParams);
         await action.prepare();
@@ -32498,30 +32500,43 @@ class Configuration {
         let status = { isValid: true, message: "Configuration is valid." };
         let env = process.env.DRATA_ENVIRONMENT || "production";
         core.info("Checking if the action is configured correctly.");
-        const ms = core.getInput("minimumSeverity");
         const workspaceId = core.getInput("workspaceId");
         const logging = (core.getInput("verboseLogging") || "true") == "true";
         const region = core.getInput("region") || "US";
         const timeout = +(core.getInput("timeoutSeconds") || "600");
-        if (!process.env.GITHUB_REPOSITORY ||
-            !process.env.DRATA_API_TOKEN ||
-            !workspaceId ||
-            !region) {
+        const missingFields = [];
+        if (!process.env.GITHUB_REPOSITORY)
+            missingFields.push("GITHUB_REPOSITORY");
+        if (!workspaceId)
+            missingFields.push("workspaceId");
+        if (!region)
+            missingFields.push("region");
+        if (missingFields.length > 0) {
             status.isValid = false;
-            status.message =
-                "Action is missing required configuration. Check to ensure that region and workspaceId are specified in the workflow.";
+            status.message = `Action is missing required configuration. Please check the following fields: [${missingFields.join(", ")}]`;
+            return status;
+        }
+        const ms = core.getInput("minimumSeverity");
+        const allowedSeverities = ["critical", "high", "moderate", "low", "none"];
+        if (allowedSeverities.includes(ms.toLowerCase())) {
+            core.info(`Minimum severity is set to: ${ms}`);
         }
         else {
-            this.configParams = {
-                workspaceId: workspaceId,
-                verboseLogging: logging,
-                timeoutSeconds: timeout,
-                region: region,
-                maxSeverity: ms,
-                apiKey: process.env.DRATA_API_TOKEN,
-                environment: env,
-            };
+            status.message =
+                "Invalid minimum severity level. Please use one of the following: none, low, moderate, high or critical.";
+            status.isValid = false;
+            return status;
         }
+        status.isValid = true;
+        this.configParams = {
+            workspaceId: workspaceId,
+            verboseLogging: logging,
+            timeoutSeconds: timeout,
+            region: region,
+            maxSeverity: ms,
+            apiKey: process.env.DRATA_API_TOKEN ?? "",
+            environment: env,
+        };
         return status;
     }
 }
