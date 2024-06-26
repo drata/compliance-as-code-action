@@ -32015,7 +32015,7 @@ class Api {
             })
                 .catch((error) => {
                 if (error.response.status === 401) {
-                    reject(`\u001B[31mThe api key is invalid or expired.`);
+                    reject(`\u001B[31mThe api key is invalid or expired. Unable to get upload URL information.`);
                 }
                 else {
                     reject(error);
@@ -32044,7 +32044,7 @@ class Api {
         catch (error) {
             if (error.response &&
                 (error.response.status === 401 || error.response.status === 403)) {
-                throw new Error(`\u001B[31mThe API key is invalid or expired.`);
+                throw new Error(`\u001B[31mThe API key is invalid or expired. Unable to upload files.`);
             }
             throw error;
         }
@@ -32065,7 +32065,7 @@ class Api {
             })
                 .catch((error) => {
                 if (error.response.status === 401 || error.response.status === 403) {
-                    return reject(`\u001B[31mThe api key is invalid or expired.`);
+                    return reject(`\u001B[31mThe api key is invalid or expired. Unable to scan infrastructure files.`);
                 }
                 reject(error);
             });
