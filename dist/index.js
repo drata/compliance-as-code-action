@@ -32087,7 +32087,7 @@ class Api {
                 .catch((error) => {
                 if (error.response.status === 404) {
                     resolve({
-                        results: { designGaps: [] },
+                        results: { designGaps: [], excludedFindings: [] },
                         status: error.response.status,
                     });
                 }
@@ -32312,7 +32312,7 @@ class ActionService {
     }
     async checkIfResultsAreAvailable(timeoutInSeconds, runId) {
         let response = {
-            results: { designGaps: [] },
+            results: { designGaps: [], excludedFindings: [] },
             status: 0,
         };
         let retries = timeoutInSeconds / 5;
@@ -32359,6 +32359,9 @@ class ActionService {
         const colorCode = actionResult ? "32" : "31";
         core.info("------------------------------------------------------------------");
         core.info(` \u001B[${colorCode}mCritical: ${grouped["Critical"]?.length ?? 0} High: ${grouped["High"]?.length ?? 0} Moderate: ${grouped["Moderate"]?.length ?? 0} Low: ${grouped["Low"]?.length ?? 0} `);
+        if (results.excludedFindings?.length > 0) {
+            core.info(`${results.excludedFindings.length} issue(s) have been excluded from this run`);
+        }
         core.info("------------------------------------------------------------------");
         return actionResult;
     }
@@ -32370,7 +32373,7 @@ class ActionService {
         environmentMap.set("app-04", "app-04.dev");
         environmentMap.set("production", "app");
         environmentMap.set("qa", "app.qa");
-        const identifier = environmentMap.get(this.configParams?.environment ?? "");
+        const identifier = environmentMap.get(this.configParams?.environment ?? "production");
         return `https://${identifier}.drata.com/compliance/monitoring/pipeline/${pipelineId}/run/${runId}`;
     }
 }
