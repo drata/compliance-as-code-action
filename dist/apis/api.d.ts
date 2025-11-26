@@ -1,7 +1,7 @@
-import { ActionConfig } from "src/models/actionConfig";
 import { IacUploadDetails } from "src/apis/models/iacUploadDetails";
-import { PostPipelinesScanRequest } from "./models/postPipelineScanRequest";
+import { ActionConfig } from "src/models/actionConfig";
 import { PipelineResultResponse } from "./models/pipelineResultResponse";
+import { PostPipelinesScanRequest } from "./models/postPipelineScanRequest";
 export declare class Api {
     private ApiBaseUrl;
     private config;
