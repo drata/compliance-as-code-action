@@ -49,15 +49,13 @@ jobs:
 - `workspaceId` - **_(Optional)_** Your Drata platform workspace Id. Defaults to 1.
 - `region` - **_(Optional)_** Your Drata platform region. One of 'US' or 'EU'. Defaults to 'US'.
 - `verboseLogging` - **_(Optional)_** An indicator of whether you'd like any detected findings output to the GitHub Actions build log. Defaults to `false`.
-- `timeoutSeconds` - **_(Optional)_** Time in seconds to wait for Drata tests to complete before failing. Defaults to `600`
+- `timeoutSeconds` - **_(Optional)_** Time in seconds to wait for Drata tests to complete before failing. Defaults to `600`.
 
 ## Secrets
 
-- `DRATA_API_TOKEN` - **_(Required)_** This is the API key for your Drata Compliance as Code action workflow. The pipeline key can be created in Drata
+- `DRATA_API_TOKEN` - **_(Required)_** This is the API key for your Drata Compliance as Code action workflow. The pipeline key can be created in Drata Platform.
 - `GITHUB_REPOSITORY`: $GITHUB*REPOSITORY - \*\**(Optional)\_\*\* Your GitHub Repository referenced in the Pipeline.
 - `GITHUB_TOKEN`: ${{ secrets.GITHUB_TOKEN }} - **_(Optional)_** Your GitHub Token.
-- Platform.
--
 
 ## License
 
